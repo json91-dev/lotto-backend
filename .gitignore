@@ -1,0 +1,8 @@
+node_modules
+.idea
+.DS_Store
+package-lock.json
+xlsx/~$data.xlsx
+.next
+back/uploads
+
