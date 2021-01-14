@@ -1,15 +1,34 @@
 module.exports = (sequelize, DataTypes) => {
   const Store = sequelize.define('Store', {
-    src: {
-      address: DataTypes.STRING(200),
-      name: DataTypes.STRING(30),
-      resion1: DataTypes.STRING(20),
-      resion2: DataTypes.STRING(20),
-      resion3: DataTypes.STRING(20),
-      storetype: DataTypes.TINYINT,
-      latitude: DataTypes.DOUBLE(5, 20),
-      longitude: DataTypes.DOUBLE(5, 20),
-      donghangid: DataTypes.INTEGER,
+    address: {
+      type: DataTypes.STRING(200)
+    },
+    name: {
+      type: DataTypes.STRING(30),
+    },
+    phone: {
+      type: DataTypes.STRING(20),
+    },
+    region1: {
+      type: DataTypes.STRING(20),
+    },
+    region2: {
+      type: DataTypes.STRING(20),
+    },
+    region3: {
+      type: DataTypes.STRING(20),
+    },
+    storetype: {
+      type: DataTypes.INTEGER,
+    },
+    latitude: {
+      type: DataTypes.DOUBLE,
+    },
+    longitude: {
+      type: DataTypes.DOUBLE,
+    },
+    donghangid: {
+      type: DataTypes.STRING(10),
     },
   }, {
     charset: 'utf8',
@@ -20,5 +39,5 @@ module.exports = (sequelize, DataTypes) => {
     db.Store.belongsToMany(db.User, { through: 'Like', as: 'Liker' }); // 다대다 테이블
   };
 
-  return Image;
+  return Store;
 };

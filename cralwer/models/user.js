@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
-    userId: {
+    uniqueid: {
       type: DataTypes.STRING(20),
       allowNull: false,
       unique: true, // 고유한 값

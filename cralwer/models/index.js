@@ -5,7 +5,7 @@ const db = {};
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
-db.Image = require('./store')(sequelize, Sequelize);
+db.Store = require('./store')(sequelize, Sequelize);
 db.User = require('./user')(sequelize, Sequelize);
 
 // DB의 테이블을 먼저 지정해놓아야 associate 함수를 사용할수 있기 때문에,
