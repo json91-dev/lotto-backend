@@ -18,48 +18,50 @@ dotenv.config();
 const db = require('./models');
 
 const SIDOArray = [
-  // '서울',
-  // '경기',
-  // '부산',
-  // '대구',
-  // '인천',
-  // '대전',
-  // '울산',
-  // '강원',
-  // '충북',
-  // '충남',
-  // '광주',
-  // '전북',
-  // '전남',
-  // '경북',
-  // '경남',
+  '서울',
+  '경기',
+  '부산',
+  '대구',
+  '인천',
+  '대전',
+  '울산',
+  '강원',
+  '충북',
+  '충남',
+  '광주',
+  '전북',
+  '전남',
+  '경북',
+  '경남',
   '제주',
-  // '세종',
+  '세종',
 ];
 
-SIDOArray.forEach(async (SIDO2) => {
-  await db.sequelize.sync();
+const getLottoData = async () => {
+  for (const SIDO2 of SIDOArray) {
+    await db.sequelize.sync();
 
-  let currentPage = 1;
-  let endPage = 100;
-  let isClosedStore = false;
-  while (currentPage < endPage && !isClosedStore) {
-    const param = qs.stringify({
-      searchType: 3,
-      nowPage: currentPage,
-      sltSIDO2: SIDO2,
-      sltGUGUN2: '',
-    });
-    const response = await axios.post(url, param, options);
-    const { data } = response;
-    const result = toJson(iconv.convert(data).toString());
-    const { arr, totalPage } = result;
-    const storeDataArray = arr;
-    endPage = totalPage;
+    let currentPage = 1;
+    let endPage = 100;
+    let isClosedStore = false;
+    while (currentPage < endPage && !isClosedStore) {
+      const param = qs.stringify({
+        searchType: 3,
+        nowPage: currentPage,
+        sltSIDO2: SIDO2,
+        sltGUGUN2: '',
+      });
+      const response = await axios.post(url, param, options);
+      const { data } = response;
+      const result = toJson(iconv.convert(data).toString());
+      const { arr, totalPage } = result;
+      const storeDataArray = arr;
+      endPage = totalPage;
 
-    storeDataArray.forEach(async (store) => {
+      for (const store of storeDataArray) {
         const {
-          BPLCDORODTLADRES,
+          // BPLCDORODTLADRES, // 도로명 전체 주소
+          BPLCLOCPLCDTLADRES, // 지번 주소
           FIRMNM,
           RTLRSTRTELNO,
           BPLCLOCPLC1,
@@ -71,10 +73,14 @@ SIDOArray.forEach(async (SIDO2) => {
           DEAL645
         } = store;
 
-        const storetype = checkStoreType(FIRMNM);
+        parseInt(DEAL645) === 1 ? isClosedStore = false : isClosedStore = true;
+        if (isClosedStore) break;
+
+        const storetype = await checkStoreType(FIRMNM, BPLCLOCPLCDTLADRES);
+        const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3? BPLCLOCPLC3: ''} ${BPLCLOCPLCDTLADRES}`;
 
         const resultStoreData = {
-          address: BPLCDORODTLADRES,
+          address,
           name: FIRMNM,
           phone: RTLRSTRTELNO,
           region1: BPLCLOCPLC1,
@@ -85,7 +91,6 @@ SIDOArray.forEach(async (SIDO2) => {
           longitude: LONGITUDE,
           storetype,
         };
-        // console.log(resultStoreData);
 
         try {
           const isStoreExist = await checkStoreExist(resultStoreData);
@@ -100,39 +105,47 @@ SIDOArray.forEach(async (SIDO2) => {
           console.log(e)
         }
 
-
-        parseInt(DEAL645) === 1 ? isClosedStore = false : isClosedStore = true;
-        // console.log(BPLCDORODTLADRES);
       }
-    );
 
-    // TODO: foreach문이 끝나기도전에 다음 currentPage ++가 수행됨.
-    // 따라서 다음페이지의 수행은 isClosedStore을 기다리지 않고 넘어가기 때문에 모든 데이터를 다 가져오게 됨.
-    // For ...of 문으로 변경 필요
-
-    currentPage++;
+      isClosedStore = false;
+      currentPage++;
+    }
   }
-})
-;
+};
+getLottoData();
+
+
 
 // 로또 당첨지점의 Type 파악.
-const checkStoreType = (storeName) => {
-  if (storeName.indexOf('CU') > -1 || storeName.indexOf('cu') > -1) {
+const checkStoreType = (storeName, lastAddress) => {
+  lastAddress = lastAddress ? lastAddress : '';
+  if ( storeName.indexOf('CU') > -1
+    || storeName.indexOf('cu') > -1
+    || storeName.indexOf('씨유') > -1
+    || lastAddress.indexOf('CU') > -1
+    || lastAddress.indexOf('cu') > -1
+    || lastAddress.indexOf('씨유') > -1) {
     return 1;
   }
 
-  if (storeName.indexOf('GS') > -1 || storeName.indexOf('gs') > -1) {
+  if (storeName.indexOf('GS') > -1
+    || storeName.indexOf('gs') > -1
+    || storeName.indexOf('지에스') > -1
+    || lastAddress.indexOf('GS') > -1
+    || lastAddress.indexOf('gs') > -1
+    || lastAddress.indexOf('지에스') > -1
+  ) {
     return 2;
   }
 
   return 0;
 };
 
-const checkStoreExist = async (storeData) => {
+const checkStoreExist = async(storeData) => {
   try {
     const store = await db.Store.findOne({
       where: { donghangid: storeData.donghangid },
-      attributes: [ 'id' ],
+      attributes: ['id'],
     });
     return !!(store && store.id)
   } catch (e) {
