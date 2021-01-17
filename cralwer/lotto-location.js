@@ -77,7 +77,7 @@ const getLottoData = async () => {
         if (isClosedStore) break;
 
         const storetype = await checkStoreType(FIRMNM, BPLCLOCPLCDTLADRES);
-        const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3? BPLCLOCPLC3: ''} ${BPLCLOCPLCDTLADRES}`;
+        const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3? BPLCLOCPLC3: ''} ${BPLCLOCPLCDTLADRES}`.replace(/ +/g, " "); // 공백 1개로
 
         const resultStoreData = {
           address,
