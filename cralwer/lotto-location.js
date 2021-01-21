@@ -77,7 +77,9 @@ const getLottoData = async () => {
         if (isClosedStore) break;
 
         const storetype = await checkStoreType(FIRMNM, BPLCLOCPLCDTLADRES);
-        const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3? BPLCLOCPLC3: ''} ${BPLCLOCPLCDTLADRES}`.replace(/ +/g, " "); // 공백 1개로
+        const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3} ${BPLCLOCPLCDTLADRES}`.replace(/ +/g, " "); // 공백 1개로
+        const { region3, region4 } = await devideRegion3(BPLCLOCPLC3);
+
 
         const resultStoreData = {
           address,
@@ -85,7 +87,8 @@ const getLottoData = async () => {
           phone: RTLRSTRTELNO,
           region1: BPLCLOCPLC1,
           region2: BPLCLOCPLC2,
-          region3: BPLCLOCPLC3,
+          region3,
+          region4,
           donghangid: RTLRID,
           latitude: LATITUDE,
           longitude: LONGITUDE,
@@ -114,7 +117,29 @@ const getLottoData = async () => {
 };
 getLottoData();
 
+const devideRegion3 = (region3) => {
+  if (checkSpace(region3)) {
+    const regions = region3.split(' ');
 
+    return {
+      region3: regions[0],
+      region4: regions[1],
+    }
+  } else {
+    return {
+      region3,
+      region4: '',
+    }
+  }
+};
+
+const checkSpace = (str) => {
+  if (str.indexOf(' ') !== -1) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 // 로또 당첨지점의 Type 파악.
 const checkStoreType = (storeName, lastAddress) => {
@@ -158,7 +183,10 @@ const checkStoreExist = async(storeData) => {
 // EUC-KR의 특수문자 왼쪽괄호 오른쪽괄호를 UTF-8의 괄호로 처리.
 const toJson = (data) => {
   return JSON.parse(
-    data.replace(/\&\&\#35\;40\;/gi, '(').replace(/\&\&\#35\;41\;/gi, ')')
+    data
+      .replace(/\&\&\#35\;40\;/gi, '(')
+      .replace(/\&\&\#35\;41\;/gi, ')')
+      .replace(/\&amp\;/gi, '&')
   )
 };
 
