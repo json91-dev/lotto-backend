@@ -1,7 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Store = sequelize.define('Store', {
     address: {
-      type: DataTypes.STRING(200)
+      type: DataTypes.STRING(200),
+    },
+    address_new: {
+      type: DataTypes.STRING(200),
     },
     name: {
       type: DataTypes.STRING(30),
@@ -22,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(20),
     },
     storetype: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(10),
     },
     latitude: {
       type: DataTypes.DOUBLE,

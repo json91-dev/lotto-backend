@@ -12,7 +12,7 @@ router.get('/', async(req, res, next) => { // /api/user
         attributes: ['id'],
       }]
     }
-  )
+  );
 
   return res.json(user);
 });

@@ -60,7 +60,7 @@ const getLottoData = async () => {
 
       for (const store of storeDataArray) {
         const {
-          // BPLCDORODTLADRES, // 도로명 전체 주소
+          BPLCDORODTLADRES, // 도로명 전체 주소
           BPLCLOCPLCDTLADRES, // 지번 주소
           FIRMNM,
           RTLRSTRTELNO,
@@ -83,6 +83,7 @@ const getLottoData = async () => {
 
         const resultStoreData = {
           address,
+          address_new: BPLCDORODTLADRES,
           name: FIRMNM,
           phone: RTLRSTRTELNO,
           region1: BPLCLOCPLC1,
@@ -150,7 +151,7 @@ const checkStoreType = (storeName, lastAddress) => {
     || lastAddress.indexOf('CU') > -1
     || lastAddress.indexOf('cu') > -1
     || lastAddress.indexOf('씨유') > -1) {
-    return 1;
+    return 'CU';
   }
 
   if (storeName.indexOf('GS') > -1
@@ -160,10 +161,10 @@ const checkStoreType = (storeName, lastAddress) => {
     || lastAddress.indexOf('gs') > -1
     || lastAddress.indexOf('지에스') > -1
   ) {
-    return 2;
+    return 'GS';
   }
 
-  return 0;
+  return '일반';
 };
 
 const checkStoreExist = async(storeData) => {
