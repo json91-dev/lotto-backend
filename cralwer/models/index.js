@@ -7,6 +7,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 
 db.Store = require('./store')(sequelize, Sequelize);
 db.User = require('./user')(sequelize, Sequelize);
+db.Winning = require('./winning')(sequelize, Sequelize);
 
 // DB의 테이블을 먼저 지정해놓아야 associate 함수를 사용할수 있기 때문에,
 // 해당 아래 코드가 항상 위에 테이블선언 밑으로 와야 한다.

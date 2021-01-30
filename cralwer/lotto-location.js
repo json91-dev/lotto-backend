@@ -145,7 +145,7 @@ const checkSpace = (str) => {
 // 로또 당첨지점의 Type 파악.
 const checkStoreType = (storeName, lastAddress) => {
   lastAddress = lastAddress ? lastAddress : '';
-  if ( storeName.indexOf('CU') > -1
+  if (storeName.indexOf('CU') > -1
     || storeName.indexOf('cu') > -1
     || storeName.indexOf('씨유') > -1
     || lastAddress.indexOf('CU') > -1
@@ -167,7 +167,7 @@ const checkStoreType = (storeName, lastAddress) => {
   return '일반';
 };
 
-const checkStoreExist = async(storeData) => {
+const checkStoreExist = async (storeData) => {
   try {
     const store = await db.Store.findOne({
       where: { donghangid: storeData.donghangid },
