@@ -21,7 +21,19 @@ module.exports = (sequelize, DataTypes) => {
     region3: {
       type: DataTypes.STRING(20),
     },
+    region3_new: {
+      type: DataTypes.STRING(20),
+    },
     region4: {
+      type: DataTypes.STRING(20),
+    },
+    region4_new: {
+      type: DataTypes.STRING(20),
+    },
+    region5: {
+      type: DataTypes.STRING(20),
+    },
+    region5_new: {
       type: DataTypes.STRING(20),
     },
     storetype: {
