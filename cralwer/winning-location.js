@@ -3,12 +3,12 @@ const db = require('./models');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const crawler = async () => {
+const crawlerWinning = async (isCron = false) => {
   try {
     await db.sequelize.sync();
 
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true, // 실제 화면에 보여줄지 말지 결정
       // args: ['--window-size=1920, 1080', '--disable-notifications', '--no-sandbox']
     });
 
@@ -20,8 +20,32 @@ const crawler = async () => {
       height: 1080,
     });
 
+    let latestRound = -1;
+
+    // isCron이 true가 아니고, env로 받은 isCron이 true라면
+    if (!isCron && process.env.isCron) {
+      isCron = true;
+    }
+
+    // 만약 크론잡에 대한 크롤링이라면,
+    // 페이지의 첫번째 라운드를 이용하여 최신 로또 라운드를 얻어옴.
+    if (isCron) {
+      await page.goto(`https://lottohell.com/winstores/`);
+      await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
+      await page.waitFor(1000);
+
+      latestRound = await page.evaluate(() => {
+        const headerText = $($('.card').find('.card-header')[0]).text().trim();
+        const round = parseInt(headerText.substring(headerText.indexOf(' ') + 1, headerText.indexOf('회')));
+        return round;
+      });
+    }
+
     // 1등 당첨 판매점 조회
-    for (let round = 949; round >= 262; round--) {
+    const startRound = isCron? latestRound : 949;
+    const endRound = isCron? latestRound : 262;
+
+    for (let round = startRound; round >= endRound; round--) {
       await page.goto(`https://lottohell.com/winstores/?page=1&round=${round}&rank=1`);
       await page.waitFor(1000);
 
@@ -87,7 +111,7 @@ const crawler = async () => {
     }
 
     // 2등 당첨 판매점 조회
-    for (let round = 949; round >= 262; round--) {
+    for (let round = startRound; round >= endRound; round--) {
       await page.goto(`https://lottohell.com/winstores/?page=1&round=${round}&rank=2`);
       await page.waitFor(1000);
 
@@ -312,4 +336,6 @@ const insertWinning = async (winning) => {
   }
 };
 
-crawler();
+crawlerWinning();
+
+module.exports.crawlerWinning = crawlerWinning;

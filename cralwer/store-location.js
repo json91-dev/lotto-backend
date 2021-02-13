@@ -37,7 +37,8 @@ const SIDOArray = [
   '세종',
 ];
 
-const getLottoData = async () => {
+const crawlerStore = async () => {
+  outer:
   for (const SIDO2 of SIDOArray) {
     await db.sequelize.sync();
 
@@ -106,11 +107,14 @@ const getLottoData = async () => {
         try {
           const isStoreExist = await checkStoreExist(resultStoreData);
           if (!isStoreExist) {
-            console.log('데이터 삽입');
-            await db.Store.create(resultStoreData)
+            console.log('새로운 판매점 데이터 삽입');
+            await db.Store.create(resultStoreData);
+            // 테스트용 (반복문 멈추기)
+            // isClosedStore = true;
+            // break outer;
           }
           else {
-            console.log('데이터 이미 존재');
+            console.log('해당 판매점 데이터 이미 존재');
           }
         } catch (e) {
           console.log(e)
@@ -122,7 +126,7 @@ const getLottoData = async () => {
     }
   }
 };
-getLottoData();
+crawlerStore();
 
 // 2단어 이상의 region3 주소를 region3, region4로 분리
 // const getRegion3to4 = (region3) => {
@@ -148,8 +152,6 @@ const getRegion3to4 = (address) => {
   }
 };
 
-
-
 const getRegionNew3to4 = (address_new) => {
   const address_words = address_new.trim().split(' ');
 
@@ -165,8 +167,6 @@ const getRegionNew3to4 = (address_new) => {
     region4_new: address_words[3],
   }
 };
-
-
 
 const isTwoWordsRegion2 = (address) => {
   if (
@@ -273,6 +273,4 @@ const toJson = (data) => {
   )
 };
 
-
-
-
+module.exports.crawlerStore = crawlerStore;

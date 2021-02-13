@@ -4,18 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "cralwer": "node lotto-location.js"
+    "crawl-store": "node store-location.js",
+    "crawl-winning": "node winning-location.js",
+    "crawl-winning-last": "isCron=true node winning-location.js",
+    "cron": "node cron-location.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
+    "cron": "^1.8.2",
+    "dotenv": "^8.0.0",
     "iconv": "^3.0.0",
+    "mysql2": "^1.6.5",
+    "pm2": "^4.5.4",
+    "puppeteer": "^2.0.0",
     "qs": "^6.9.4",
     "sequelize": "^5.8.6",
-    "sequelize-cli": "^5.4.0",
-    "dotenv": "^8.0.0",
-    "mysql2": "^1.6.5",
-    "puppeteer": "^2.0.0"
+    "sequelize-cli": "^5.4.0"
   }
 }
