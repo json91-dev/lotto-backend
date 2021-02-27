@@ -28,7 +28,7 @@ router.get('/searchRadius', async(req, res, next) => { // POST /api/store
   SELECT *,
     (6371*acos(cos(radians(${lat}))*cos(radians(latitude))*cos(radians(longitude) -radians(${long}))+sin(radians(${lat}))*sin(radians(latitude))))
     AS distance
-    FROM lottotour.Stores
+    FROM Stores
     HAVING distance <= ${rad}
     ORDER BY distance;
   `;

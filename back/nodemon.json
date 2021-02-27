@@ -4,7 +4,8 @@
     "routes.js",
     "config.js",
     "models",
-    "nodemon.json"
+    "nodemon.json",
+    "routes"
   ],
   "exec": "node index.js",
   "ext": "js json"
