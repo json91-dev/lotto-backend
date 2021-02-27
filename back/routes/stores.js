@@ -2,7 +2,11 @@ const express = require('express');
 const db = require('../models');
 const router = express.Router();
 
-router.get('/searchRadius', async(req, res, next) => { // POST /api/store
+router.get('/', async (req, res, next) => {
+
+});
+
+router.get('/searchRadius', async (req, res, next) => { // POST /api/store
 
   if (!req.query['long']) {
     res.status(400).send('경도(long) 값이 존재하지 않습니다.');

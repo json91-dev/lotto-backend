@@ -1,13 +1,24 @@
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
-    uniqueid: {
+    deviceid: {
+      type: DataTypes.STRING(100),
+      unique: true,
+    },
+
+    nickname: {
+      type: DataTypes.STRING(30),
+      allowNull: false,
+      unique: true,
+    },
+
+    provider: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      unique: true, // 고유한 값
     },
-    password: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
+
+    snsid: {
+      type: DataTypes.STRING(40),
+      unique: true,
     },
   }, {
     charset: 'utf8',
