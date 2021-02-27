@@ -1,28 +1,102 @@
 const express = require('express');
 const db = require('../models');
 const router = express.Router();
+const { checkProvider } = require('./middleware');
 
-router.get('/', async(req, res, next) => { // /api/user
-  const user = await db.User.findOne({
-      where: { id: parseInt(req.user.id, 10) },
-      attributes: ['id', 'nickname'],
-      include: [{
-        model: db.Post,
-        as: 'Posts',
-        attributes: ['id'],
-      }]
+router.get('/',checkProvider ,async (req, res, next) => { // /api/user
+  try {
+    if (req.body.provider === 'device') {
+      if (!req.body.deviceid) {
+        return res.status(400).json({
+          success: false,
+          message: '디바이스 아이디가 없습니다.',
+        });
+      }
+
+      const user = await db.User.findOne({
+          where: {
+            deviceid: req.body.deviceid,
+          }
+        }
+      );
+
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          message: '유저가 존재하지 않습니다.(deviceid)'
+        })
+      } else {
+        res.status(200).json(user);
+      }
     }
-  );
-
-  return res.json(user);
+  } catch(e) {
+    console.error(e);
+    next(e);
+  }
 });
 
-router.post('/', async(req, res, next) => {
-  const exUser = await db.User.findOne({
-    where: {
-      uniqueid: req.body.uniqueid,
+router.post('/',checkProvider, async (req, res, next) => {
+  try {
+    if (req.body.provider === 'device') {
+      if (!req.deviceid) {
+        return res.status(400).json({
+          success: false,
+          message: '디바이스 아이디가 없습니다.',
+        });
+      }
+
+      const existUser = await db.User.findOne({
+          where: {
+            deviceid: req.deviceid,
+          }
+        }
+      );
+
+      if (!existUser) {
+        const newUser = await db.User.create({
+          nickname: req.body.nickname,
+          provider: req.body.provider,
+          deviceid: req.body.deviceid,
+        });
+
+        return res.status(200).json(newUser);
+      } else {
+        res.status(404).json({
+          success: false,
+          message: '이미 유저가 존재합니다.(deviceid)'
+        })
+      }
     }
-  })
+  } catch(e) {
+    console.error(e);
+    next(e);
+  }
+});
+
+router.post('/check-nickname', async (req, res, next) => {
+  try {
+    const existNickname = await db.User.findOne({
+      where: {
+        nickname: req.body.nickname,
+      }
+    });
+
+    if (!existNickname) {
+      return res.status(200).json({
+        success: false,
+        message: "닉네임이 중복되었습니다."
+      });
+
+    } else {
+      return res.status(200).json({
+        success: true,
+        message: "올바른 닉네임입니다."
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
 });
 
 module.exports = router;

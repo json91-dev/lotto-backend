@@ -2,6 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     deviceid: {
       type: DataTypes.STRING(100),
+      allowNull: true,
       unique: true,
     },
 
@@ -18,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
 
     snsid: {
       type: DataTypes.STRING(40),
+      allowNull: true,
       unique: true,
     },
   }, {

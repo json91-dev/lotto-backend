@@ -3,7 +3,15 @@ const db = require('../models');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-
+  try {
+    const stores = await db.Store.findAll({
+      attributes: ['id', 'address', 'address_new', 'name', 'phone', 'region1', 'region2', 'storetype', 'latitude', 'longitude',]
+    });
+    res.json(stores);
+  } catch {
+    console.error(e);
+    next(e);
+  }
 });
 
 router.get('/searchRadius', async (req, res, next) => { // POST /api/store
@@ -29,7 +37,7 @@ router.get('/searchRadius', async (req, res, next) => { // POST /api/store
 
   try {
     const query = `
-  SELECT *,
+  SELECT id, address, address_new, name, phone, region1, region2, storetype, latitude, longitude, 
     (6371*acos(cos(radians(${lat}))*cos(radians(latitude))*cos(radians(longitude) -radians(${long}))+sin(radians(${lat}))*sin(radians(latitude))))
     AS distance
     FROM Stores
@@ -37,8 +45,10 @@ router.get('/searchRadius', async (req, res, next) => { // POST /api/store
     ORDER BY distance;
   `;
 
-    const stores = await db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT });
-    res.json(stores)
+    const stores = await db.sequelize.query(query, {
+      type: db.sequelize.QueryTypes.SELECT
+    });
+    res.status(200).json(stores)
   } catch (e) {
     console.error(e);
     next(e);
