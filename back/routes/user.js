@@ -38,16 +38,30 @@ router.get('/',checkProvider ,async (req, res, next) => { // /api/user
 router.post('/',checkProvider, async (req, res, next) => {
   try {
     if (req.body.provider === 'device') {
-      if (!req.deviceid) {
+      if (!req.body.deviceid) {
         return res.status(400).json({
           success: false,
           message: '디바이스 아이디가 없습니다.',
         });
       }
 
+      if (!req.body.nickname) {
+        return res.status(400).json({
+          success: false,
+          message: '닉네임이 없습니다.',
+        });
+      }
+
+      if (!req.body.address) {
+        return res.status(400).json({
+          success: false,
+          message: '주소가 없습니다.',
+        });
+      }
+
       const existUser = await db.User.findOne({
           where: {
-            deviceid: req.deviceid,
+            deviceid: req.body.deviceid,
           }
         }
       );
@@ -57,6 +71,7 @@ router.post('/',checkProvider, async (req, res, next) => {
           nickname: req.body.nickname,
           provider: req.body.provider,
           deviceid: req.body.deviceid,
+          address: req.body.address,
         });
 
         return res.status(200).json(newUser);

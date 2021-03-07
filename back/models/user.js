@@ -22,6 +22,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       unique: true,
     },
+
+    address: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+    }
   }, {
     charset: 'utf8',
     collate: 'utf8_general_ci', // utf-8 설정 : 한글이 저장됨.
