@@ -40,22 +40,19 @@ router.post('/',checkProvider, async (req, res, next) => {
     if (req.body.provider === 'device') {
       if (!req.body.deviceid) {
         return res.status(400).json({
-          success: false,
-          message: '디바이스 아이디가 없습니다.',
+          msg: '디바이스 아이디가 없습니다.',
         });
       }
 
       if (!req.body.nickname) {
         return res.status(400).json({
-          success: false,
-          message: '닉네임이 없습니다.',
+          msg: '닉네임이 없습니다.',
         });
       }
 
       if (!req.body.address) {
         return res.status(400).json({
-          success: false,
-          message: '주소가 없습니다.',
+          msg: '주소가 없습니다.',
         });
       }
 
@@ -77,8 +74,7 @@ router.post('/',checkProvider, async (req, res, next) => {
         return res.status(200).json(newUser);
       } else {
         res.status(404).json({
-          success: false,
-          message: '이미 유저가 존재합니다.(deviceid)'
+          msg: '이미 유저가 존재합니다.(deviceid)'
         })
       }
     }
@@ -97,7 +93,7 @@ router.post('/check-nickname', async (req, res, next) => {
     });
 
     if (!existNickname) {
-      return res.status(200).json({
+      return res.status(409).json({
         success: false,
         message: "닉네임이 중복되었습니다."
       });
@@ -105,7 +101,6 @@ router.post('/check-nickname', async (req, res, next) => {
     } else {
       return res.status(200).json({
         success: true,
-        message: "올바른 닉네임입니다."
       });
     }
   } catch (e) {

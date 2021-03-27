@@ -55,7 +55,8 @@ module.exports = (sequelize, DataTypes) => {
 
   Store.associate = (db) => {
     db.Store.hasMany(db.Winning);
-    db.Store.belongsToMany(db.User, { through: 'Like', as: 'Liker' }); // 다대다 테이블
+    db.Store.belongsToMany(db.User, { through: 'Like', as: 'Likers' }); // 다대다 테이블
+    db.Store.belongsToMany(db.User, { through: 'Visit', as: 'Visitors'}) // 다대다 테이블
   };
 
   return Store;
