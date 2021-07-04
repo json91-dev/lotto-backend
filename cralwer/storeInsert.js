@@ -81,7 +81,7 @@ const crawlerStore = async () => {
         const address = `${BPLCLOCPLC1} ${BPLCLOCPLC2} ${BPLCLOCPLC3} ${BPLCLOCPLCDTLADRES}`.replace(/ +/g, " "); // 공백 1개로
         const { region3, region4 } = await getRegion3to4(address);
         const address_new = BPLCDORODTLADRES.replace(/ +/g, " ").trim();
-        const { region3_new, region4_new} = await getRegionNew3to4(address_new);
+        const { region3_new, region4_new } = await getRegionNew3to4(address_new);
         const region5 = await getEndWord(address);
         const region5_new = await getEndWord(address_new);
 
@@ -136,6 +136,12 @@ crawlerStore();
 //   }
 // };
 
+
+/**
+ * 구 주소의 resion3와 region4를 구함.
+ * @param address: 구 주소
+ * @returns {{region3: string, region4: string}} : 분리된 구 주소 반환
+ */
 const getRegion3to4 = (address) => {
   const address_words = address.trim().split(' ');
 
@@ -152,6 +158,11 @@ const getRegion3to4 = (address) => {
   }
 };
 
+/**
+ * 신 주소의 region3와 resion4를 구함.
+ * @param address_new: 신 주소
+ * @returns {{region3_new: string, region4_new: string}} : 분리된 신 주소 반환.
+ */
 const getRegionNew3to4 = (address_new) => {
   const address_words = address_new.trim().split(' ');
 
@@ -168,6 +179,11 @@ const getRegionNew3to4 = (address_new) => {
   }
 };
 
+/**
+ * 구 주소에서 region2가 2개 이상의 단어인지를 체크함.
+ * @param address: 구 주소
+ * @returns {boolean} : resion2가 2개 이상의 단어인지 여부
+ */
 const isTwoWordsRegion2 = (address) => {
   if (
     address.indexOf('고양시 덕양구') > -1 ||
@@ -209,13 +225,21 @@ const isTwoWordsRegion2 = (address) => {
   return false;
 };
 
-
+/**
+ * 문장의 마지막 단어 추출.
+ * @param sentence: 문장
+ * @returns {*|string}: 마지막 단어
+ */
 const getEndWord = (sentence) => {
   const words = sentence.split(' ');
   return words[words.length -1];
 };
 
-// 공백을 체크하고 공백이 있으면 true 없으면 false 반환
+/**
+ * 공백을 체크하고 공백이 있으면 true 없으면 false 반환.
+ * @param str: string 문자
+ * @returns {boolean}: 공백 여부
+ */
 const checkSpace = (str) => {
   if (str.indexOf(' ') !== -1) {
     return true;
@@ -224,7 +248,12 @@ const checkSpace = (str) => {
   }
 };
 
-// 로또 당첨지점의 Type 파악.
+/**
+ * 로또 당첨지점의 Type 파악.
+ * @param storeName: 로또 판매점 이름
+ * @param lastAddress: 로또 판매점의 마지막 주소
+ * @returns {string}: Type (CU, GS, 일반)
+ */
 const checkStoreType = (storeName, lastAddress) => {
   lastAddress = lastAddress ? lastAddress : '';
   if (storeName.indexOf('CU') > -1
@@ -249,6 +278,11 @@ const checkStoreType = (storeName, lastAddress) => {
   return '일반';
 };
 
+/**
+ * 로또 판매점이 이미 DB 저장되었는지 여부 파악.
+ * @param storeData: Axios로 얻어온 store 객체 (donhangid 파싱)
+ * @returns {boolean}: DB 저장 여부
+ */
 const checkStoreExist = async (storeData) => {
   try {
     const store = await db.Store.findOne({
@@ -262,8 +296,12 @@ const checkStoreExist = async (storeData) => {
   }
 };
 
-// 불필요한 문자열 제거후 JSON Object로 반환.
-// EUC-KR의 특수문자 왼쪽괄호 오른쪽괄호를 UTF-8의 괄호로 처리.
+/**
+ * 불필요한 문자열 제거후 JSON Object로 반환.
+ * EUC-KR의 특수문자 왼쪽괄호[ ( ]  오른쪽괄호[ ) ] 를 UTF-8의 괄호로 처리.
+ * @param data: 바이트 ArrayBuffer
+ * @returns {any}: 왼쪽괄호와 오른쪽 괄호가 치환된 ArrayBuffer를 이용하여 JSON생성 후 반환
+ */
 const toJson = (data) => {
   return JSON.parse(
     data

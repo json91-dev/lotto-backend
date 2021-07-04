@@ -171,8 +171,12 @@ const crawlerWinning = async (isCron = false) => {
   }
 };
 
-// 주소를 파싱해서 region에 대한 데이터를 얻어온다.
-// 만약 region2에 2단어 이상의 주소가 포함되 있을때의 예외처리를 진행한다.
+/**
+ * 주소를 파싱해서 region에 대한 데이터를 얻어옴.
+ * 만약 region2에 2단어 이상의 주소가 포함되 있을때의 예외처리를 진행.
+ * @param address:
+ * @returns {*}
+ */
 const devideRegion = (address) => {
   const address_words = address.split(' ');
 
@@ -228,12 +232,18 @@ const devideRegion = (address) => {
   }
 };
 
+/**
+ * 크롤러를 통해 얻은 Winning 데이터를 가공하여 DB에 삽입.
+ * @param winning
+ * @returns {Promise<null>}
+ */
 const insertWinning = async (winning) => {
   // store DB에 해당 판매점
   const { rank, round, selection, storeName, address } = winning;
   let { region1, region2, region3, region4, region5 } = await devideRegion(address.replace(/ +/g, " ").trim());
   if (!region4) region4 = '값없음';
 
+  // winning 데이터를 DB로 insert.
   const makeWinning = async (rank, selection, round) => {
     const winning = await db.Winning.create({
       rank,

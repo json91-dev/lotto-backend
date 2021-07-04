@@ -1,5 +1,5 @@
-const crawlerStore = require('store-location');
-const crawlerWinning = require('winning-location');
+const crawlerStore = require('cralwer/storeInsert');
+const crawlerWinning = require('cralwer/storeWinningInsert');
 
 const storeCron = new CronJob({
   cronTime: '0 0 * * 7', // 매주 일요일 00시 00분

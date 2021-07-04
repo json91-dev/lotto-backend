@@ -67,12 +67,14 @@ router.get('/searchRadius', async (req, res, next) => { // POST /api/store
         model: db.User,
         through: 'Visit',
         as: 'Visitors',
-      }]
+      }, {
+        model: db.Winning,
+        attributes: ['rank', 'selection'] // 'selection': 추후에 추가
+      }],
+
     });
 
-    res.status(200).json({
-      results: stores,
-    });
+    res.status(200).json(stores);
 
   } catch (e) {
     console.error(e);
