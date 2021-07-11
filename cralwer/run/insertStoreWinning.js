@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const db = require('./models');
+const db = require('../models/index');
 const dotenv = require('dotenv');
 dotenv.config();
 

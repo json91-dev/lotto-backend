@@ -15,26 +15,26 @@ const options = {
 const dotenv = require('dotenv');
 dotenv.config();
 
-const db = require('./models');
+const db = require('../models/index');
 
 const SIDOArray = [
   '서울',
-  // '경기',
-  // '부산',
-  // '대구',
-  // '인천',
-  // '대전',
-  // '울산',
-  // '강원',
-  // '충북',
-  // '충남',
-  // '광주',
-  // '전북',
-  // '전남',
-  // '경북',
-  // '경남',
-  // '제주',
-  // '세종',
+  '경기',
+  '부산',
+  '대구',
+  '인천',
+  '대전',
+  '울산',
+  '강원',
+  '충북',
+  '충남',
+  '광주',
+  '전북',
+  '전남',
+  '경북',
+  '경남',
+  '제주',
+  '세종',
 ];
 
 const crawlerStore = async () => {
@@ -83,12 +83,12 @@ const crawlerStore = async () => {
           if (!isClosedStore) {
             break;
           } else {
-            // Step 4: 폐점된 판매점 데이터중 DB에 현재 존재하는 판매점이라면 폐점된 판매점으로 값 수정
-            const foundStore = await findStoreById(RTLRID);
+            // Step 4: 폐점된 판매점 데이터중 DB에 현재 존재하는 판매점인지 찾음.
+            const foundStore = await findStoreById(RTLRID); // 없으면 null 반환
+
+            // Step 5: 만약 DB에 존재하는 판매점이라면 폐점된 판매점으로 DB Update (opend => false)
             if (foundStore) {
-              console.log(`XXXXXXXXXX: 폐점된 판매점 찾음 ${store.FIRMNM} ${store.RTLRID}`);
-            } else {
-              // console.log('Exist: 상점 존재');
+              await updateClosedStore(foundStore)
             }
           }
         }
@@ -120,10 +120,10 @@ const toJson = (data) => {
  * @param storeData: Axios로 얻어온 store 객체 (donhangid 파싱)
  * @returns {boolean}: DB 저장 여부
  */
-const findStoreById = async (donghandid) => {
+const findStoreById = async (donghangId) => {
   try {
     const store = await db.Store.findOne({
-      where: { donghangid: donghandid},
+      where: { donghangid: donghangId},
       attributes: ['id'],
     });
 
@@ -137,6 +137,19 @@ const findStoreById = async (donghandid) => {
     console.log(e);
     return null;
   }
+};
+
+
+const updateClosedStore = async (Store) => {
+  try {
+    await Store.update({ opened: false });
+    console.log('폐점된 판매점 업데이트');
+    return Store;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+
 };
 
 module.exports.crawlerStore = crawlerStore;

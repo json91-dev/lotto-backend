@@ -5,7 +5,10 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     const stores = await db.Store.findAll({
-      attributes: ['id', 'address', 'address_new', 'name', 'phone', 'region1', 'region2', 'storetype', 'latitude', 'longitude',]
+      attributes: ['id', 'address', 'address_new', 'name', 'phone', 'region1', 'region2', 'storetype', 'latitude', 'longitude',],
+      where: {
+        opened: true,
+      }
     });
     res.json(stores);
   } catch {
@@ -56,6 +59,7 @@ router.get('/searchRadius', async (req, res, next) => { // POST /api/store
         'storetype',
         'latitude',
         'longitude',
+        'opened',
       ],
       having: db.sequelize.literal(`distance < ${rad}`),
       order: db.sequelize.literal(`distance ASC`),
@@ -71,6 +75,9 @@ router.get('/searchRadius', async (req, res, next) => { // POST /api/store
         model: db.Winning,
         attributes: ['rank', 'selection'] // 'selection': 추후에 추가
       }],
+      where: {
+        opened: true,
+      }
 
     });
 

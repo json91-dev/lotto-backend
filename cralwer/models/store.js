@@ -48,6 +48,9 @@ module.exports = (sequelize, DataTypes) => {
     donghangid: {
       type: DataTypes.STRING(10),
     },
+    opened: {
+      type: DataTypes.BOOLEAN,
+    }
   }, {
     charset: 'utf8',
     collate: 'utf8_general_ci',

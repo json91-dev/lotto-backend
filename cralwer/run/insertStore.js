@@ -15,7 +15,7 @@ const options = {
 const dotenv = require('dotenv');
 dotenv.config();
 
-const db = require('./models');
+const db = require('../models/index');
 
 const SIDOArray = [
   '서울',
@@ -102,6 +102,7 @@ const crawlerStore = async () => {
           latitude: LATITUDE,
           longitude: LONGITUDE,
           storetype,
+          opened: true,
         };
 
         try {
@@ -109,9 +110,6 @@ const crawlerStore = async () => {
           if (!isStoreExist) {
             console.log('새로운 판매점 데이터 삽입');
             await db.Store.create(resultStoreData);
-            // 테스트용 (반복문 멈추기)
-            // isClosedStore = true;
-            // break outer;
           }
           else {
             console.log('해당 판매점 데이터 이미 존재');
@@ -127,15 +125,6 @@ const crawlerStore = async () => {
   }
 };
 crawlerStore();
-
-// 2단어 이상의 region3 주소를 region3, region4로 분리
-// const getRegion3to4 = (region3) => {
-//   const regions = region3.trim().split(' ');
-//   return {
-//     region3: regions[0],
-//   }
-// };
-
 
 /**
  * 구 주소의 resion3와 region4를 구함.
