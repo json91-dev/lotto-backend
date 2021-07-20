@@ -3,11 +3,16 @@ const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
+const path = require('path');
+dotenv.config({
+  path: path.resolve(
+    process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"
+  ),
+}); /** ./models 보다 위에 있어야 process.env로 .env가 매칭됨 **/
 const db = require('./models');
 const userAPIRouter = require('./routes/user');
 const storesAPIRouter = require('./routes/stores');
 
-dotenv.config();
 const app = express();
 db.sequelize.sync(); // 테이블을 알아서 생성해 줌
 
@@ -19,7 +24,6 @@ app.use('/', express.static('uploads'));
 app.use(express.json()); // JSON 형식의 본문을 처리한다.
 app.use(express.urlencoded({ extended: true })); // Form으로 넘어온 데이터를 처리한다.
 app.use(cors({
-  // origin: 'http://localhost:3000',
   origin: true,
   credentials: true,
 })); // cors 문제 처리
@@ -28,5 +32,9 @@ app.use('/api/user', userAPIRouter);
 app.use('/api/stores', storesAPIRouter);
 // 로컬 호스트의 서버 실행
 app.listen(3000, () => {
-  console.log('server is running on localhost: 3065');
+  console.log('server is running on localhost: 3000');
+});
+
+app.get('/', (req, res) => {
+  res.send('lotto backend 서버 정상 동작!');
 });

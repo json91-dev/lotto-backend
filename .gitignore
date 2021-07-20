@@ -6,3 +6,4 @@ xlsx/~$data.xlsx
 .next
 back/uploads
 *.pem
+.env*
