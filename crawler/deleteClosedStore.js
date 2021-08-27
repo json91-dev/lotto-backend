@@ -1,5 +1,6 @@
 const axios = require('axios');
 const qs = require('qs');
+const path = require('path');
 var Iconv = require('iconv').Iconv;
 var iconv = new Iconv('EUC-KR', 'UTF-8//TRANSLIT//IGNORE');
 const url = `https://dhlottery.co.kr/store.do?method=sellerInfo645Result`;
@@ -13,9 +14,13 @@ const options = {
 };
 
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({
+  path: path.resolve(
+    process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"
+  ),
+});
 
-const db = require('../models/index');
+const db = require('./models/index');
 
 const SIDOArray = [
   '서울',
@@ -37,68 +42,68 @@ const SIDOArray = [
   '세종',
 ];
 
-const crawlerStore = async () => {
-    for (const SIDO2 of SIDOArray) {
-      await db.sequelize.sync();
+/** 동행복권 사이트 크롤링 후 삭제된 상점을 DB에 반영함 **/
+const deleteClosedStore = async () => {
+  for (const SIDO2 of SIDOArray) {
+    await db.sequelize.sync();
 
-      let startPage = 1;
-      let isClosedStore = true;
+    let startPage = 1;
+    let isClosedStore = true;
 
+    const param = qs.stringify({
+      searchType: 3,
+      nowPage: 1,
+      sltSIDO2: SIDO2,
+      sltGUGUN2: '',
+    });
+
+    // Step 1: 동행복권 사이트에서 마지막 페이지(totalPage)를 얻어옴.
+    const response = await axios.post(url, param, options);
+    const { data } = response;
+    const result = toJson(iconv.convert(data).toString());
+    let currentPage = result.totalPage;
+
+    // Step 2: 마지막 페이지에서 첫번째 페이지까지 역순으로 데이터를 얻어옴. (폐점된 판매점 => 열린 판매점)
+    while (startPage < currentPage  && isClosedStore) {
       const param = qs.stringify({
         searchType: 3,
-        nowPage: 1,
+        nowPage: currentPage,
         sltSIDO2: SIDO2,
         sltGUGUN2: '',
       });
-
-      // Step 1: 동행복권 사이트에서 마지막 페이지(totalPage)를 얻어옴.
       const response = await axios.post(url, param, options);
       const { data } = response;
       const result = toJson(iconv.convert(data).toString());
-      let currentPage = result.totalPage;
+      const { arr } = result;
+      const storeDataArray = arr;
 
-      // Step 2: 마지막 페이지에서 첫번째 페이지까지 역순으로 데이터를 얻어옴. (폐점된 판매점 => 열린 판매점)
-      while (startPage < currentPage  && isClosedStore) {
-        const param = qs.stringify({
-          searchType: 3,
-          nowPage: currentPage,
-          sltSIDO2: SIDO2,
-          sltGUGUN2: '',
-        });
-        const response = await axios.post(url, param, options);
-        const { data } = response;
-        const result = toJson(iconv.convert(data).toString());
-        const { arr } = result;
-        const storeDataArray = arr;
+      for (const store of storeDataArray.reverse()) {
+        const {
+          DEAL645,
+          RTLRID
+        } = store;
 
-        for (const store of storeDataArray.reverse()) {
-          const {
-            DEAL645,
-            RTLRID
-          } = store;
+        parseInt(DEAL645) === 1 ? isClosedStore = false : isClosedStore = true;
 
-          parseInt(DEAL645) === 1 ? isClosedStore = false : isClosedStore = true;
+        // Step 3: 현재 페이지에서 처음으로 열린 판매점이 검색된다면 이전 페이지로 이동 (페이지 -1)
+        if (!isClosedStore) {
+          break;
+        } else {
+          // Step 4: 폐점된 판매점 데이터중 DB에 현재 존재하는 판매점인지 찾음.
+          const foundStore = await findStoreById(RTLRID); // 없으면 null 반환
 
-          // Step 3: 현재 페이지에서 처음으로 열린 판매점이 검색된다면 이전 페이지로 이동 (페이지 -1)
-          if (!isClosedStore) {
-            break;
-          } else {
-            // Step 4: 폐점된 판매점 데이터중 DB에 현재 존재하는 판매점인지 찾음.
-            const foundStore = await findStoreById(RTLRID); // 없으면 null 반환
-
-            // Step 5: 만약 DB에 존재하는 판매점이라면 폐점된 판매점으로 DB Update (opend => false)
-            if (foundStore) {
-              await updateClosedStore(foundStore)
-            }
+          // Step 5: 만약 DB에 존재하는 판매점이라면 폐점된 판매점으로 DB Update (opend => false)
+          if (foundStore) {
+            await deleteClosedStoreFromDB(foundStore)
           }
         }
-
-        isClosedStore = true;
-        currentPage--;
       }
+
+      isClosedStore = true;
+      currentPage--;
     }
+  }
 };
-crawlerStore();
 
 /**
  * 불필요한 문자열 제거후 JSON Object로 반환.
@@ -140,7 +145,7 @@ const findStoreById = async (donghangId) => {
 };
 
 
-const updateClosedStore = async (Store) => {
+const deleteClosedStoreFromDB = async (Store) => {
   try {
     await Store.update({ opened: false });
     console.log('폐점된 판매점 업데이트');
@@ -149,7 +154,8 @@ const updateClosedStore = async (Store) => {
     console.log(e);
     return null;
   }
-
 };
 
-module.exports.crawlerStore = crawlerStore;
+// deleteClosedStore();
+
+module.exports.crawl = deleteClosedStore;

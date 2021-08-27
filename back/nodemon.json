@@ -7,6 +7,6 @@
     "nodemon.json",
     "routes"
   ],
-  "exec": "node index.js",
+  "exec": "NODE_ENV=development node index.js",
   "ext": "js json"
 }

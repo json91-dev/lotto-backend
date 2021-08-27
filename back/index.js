@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const path = require('path');
+console.log(process.env.NODE_ENV);
 dotenv.config({
   path: path.resolve(
     process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"

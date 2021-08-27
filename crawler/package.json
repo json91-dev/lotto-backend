@@ -4,10 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "crawl-store": "node store-location.js",
-    "crawl-winning": "node winning-location.js",
-    "crawl-winning-last": "isCron=true node winning-location.js",
-    "cron": "node cron-location.js"
+    "crawl-store": "NODE_ENV=development node store-location.js",
+    "crawl-winning": "NODE_ENV=development node winning-location.js",
+    "crawl-winning-last": "NODE_ENV=development node winning-location.js"
   },
   "author": "",
   "license": "ISC",

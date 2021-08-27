@@ -1,9 +1,16 @@
-const puppeteer = require('puppeteer');
-const db = require('../models/index');
+const path = require('path');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({
+  path: path.resolve(
+    process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"
+  ),
+});
 
-const crawlerWinning = async (isCron = false) => {
+const puppeteer = require('puppeteer');
+const db = require('./models/index');
+
+/** 로또 지옥 사이트 크롤링후 당첨 상점을 DB로 삽입 **/
+const insertStoreWinning = async (isLatestRoundCrawl) => {
   try {
     await db.sequelize.sync();
 
@@ -20,36 +27,28 @@ const crawlerWinning = async (isCron = false) => {
       height: 1080,
     });
 
-    let latestRound = -1;
 
-    // isCron이 true가 아니고, env로 받은 isCron이 true라면
-    if (!isCron && process.env.isCron) {
-      isCron = true;
-    }
+    await page.goto(`https://lottohell.com/winstores/`);
+    await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
+    await page.waitFor(1000);
 
-    // 만약 크론잡에 대한 크롤링이라면,
-    // 페이지의 첫번째 라운드를 이용하여 최신 로또 라운드를 얻어옴.
-    if (isCron) {
-      await page.goto(`https://lottohell.com/winstores/`);
-      await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
-      await page.waitFor(1000);
+    const latestRound = await page.evaluate(() => {
+      const headerText = $($('.card').find('.card-header')[0]).text().trim();
+      const round = parseInt(headerText.substring(headerText.indexOf(' ') + 1, headerText.indexOf('회')));
+      return round;
+    });
 
-      latestRound = await page.evaluate(() => {
-        const headerText = $($('.card').find('.card-header')[0]).text().trim();
-        const round = parseInt(headerText.substring(headerText.indexOf(' ') + 1, headerText.indexOf('회')));
-        return round;
-      });
-    }
 
-    // 1등 당첨 판매점 조회
-    const startRound = isCron? latestRound : 949;
-    const endRound = isCron? latestRound : 262;
+    /** 1등 당첨 판매점 조회 **/
+    const startRound = isLatestRoundCrawl? latestRound : 949;
+    const endRound = isLatestRoundCrawl? latestRound : 262;
 
+    // Step 1: 각 회차별 1등 판매정보 첫 페이지로 이동 (시작회차 => 마지막 회차)
     for (let round = startRound; round >= endRound; round--) {
       await page.goto(`https://lottohell.com/winstores/?page=1&round=${round}&rank=1`);
       await page.waitFor(1000);
 
-      // 전체 페이지 갯수를 얻어옴.
+      // Step 2: 각 회차별 판매정보 페이지의 제일 끝 페이지에 대한 정보를 확인
       const totalPage = await page.evaluate(() => {
         const getTotalPage = (str) => {
           const removeBlankStr = str.replace(/ +/g, "");
@@ -62,11 +61,13 @@ const crawlerWinning = async (isCron = false) => {
         return getTotalPage($('.current').text().trim());
       });
 
-      // 페이지 단위로 순회
+      // Step 3: 선택된 회차의 시작페이지부터 끝 페이지까지 페이지를 이동하며 당첨 판매점 데이터 확인
       for (let current = 1; current <= totalPage; current++) {
         await page.goto(`https://lottohell.com/winstores/?page=${current}&round=${round}&rank=1`);
         await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
         await page.waitFor(1000);
+
+        // Step 4: 각 페이지별로 당점판매점 데이터를 얻어와서 배열에 저장.
         const winningDataArray = await page.evaluate(() => {
           let selection, storeName, address;
           const rank = 1;
@@ -90,18 +91,17 @@ const crawlerWinning = async (isCron = false) => {
             address = removeBlank($(item).find('.card-body .card-text').text());
 
             result.push({
-              rank,
-              selection,
-              storeName,
-              address,
+              rank, // 등수
+              selection, // 자동 | 수동
+              storeName, // 판매점 이름
+              address, // 판매점 주소
             })
           }
 
           return result;
         });
 
-        // 1. 현재 당첨판매점 리스트에 데이터가 존재하는지 체크
-        // 2. 존재하지 않는다면 store DB에서 해당 로또 판매점 정보가 있는지 체크
+        // Step 5: 배열을 순회하면서 당첨 판매점 데이터를 DB에 삽입
         for (const winning of winningDataArray) {
           winning.round = round;
           await insertWinning(winning);
@@ -110,12 +110,14 @@ const crawlerWinning = async (isCron = false) => {
       }
     }
 
-    // 2등 당첨 판매점 조회
+    /** 2등 당첨 판매점 조회 **/
+
+    // Step 1: 각 회차별 2등 판매정보 첫 페이지로 이동 (시작회차 => 마지막 회차)
     for (let round = startRound; round >= endRound; round--) {
       await page.goto(`https://lottohell.com/winstores/?page=1&round=${round}&rank=2`);
       await page.waitFor(1000);
 
-      // 전체 페이지 갯수를 얻어옴.
+      // Step 2: 각 회차별 판매정보 페이지의 제일 끝 페이지에 대한 정보를 확인
       const totalPage = await page.evaluate(() => {
         const getTotalPage = (str) => {
           const removeBlankStr = str.replace(/ +/g, "");
@@ -127,11 +129,13 @@ const crawlerWinning = async (isCron = false) => {
         return getTotalPage($('.current').text().trim());
       });
 
-      // 페이지 단위로 순회
+      // Step 3: 선택된 회차의 시작페이지부터 끝 페이지까지 페이지를 이동하며 당첨 판매점 데이터 확인
       for (let current = 1; current <= totalPage; current++) {
         await page.goto(`https://lottohell.com/winstores/?page=${current}&round=${round}&rank=2`);
         await page.addScriptTag({ url: 'https://code.jquery.com/jquery-3.2.1.min.js' });
         await page.waitFor(1000);
+
+        // Step 4: 각 페이지별로 당점판매점 데이터를 얻어와서 배열에 저장.
         const winningDataArray = await page.evaluate(() => {
           let storeName, address, selection = null;
           const rank = 2;
@@ -155,6 +159,7 @@ const crawlerWinning = async (isCron = false) => {
           return result;
         });
 
+        // Step 5: 배열을 순회하면서 당첨 판매점 데이터를 DB에 삽입
         for (const winning of winningDataArray) {
           winning.round = round;
           await insertWinning(winning);
@@ -346,6 +351,6 @@ const insertWinning = async (winning) => {
   }
 };
 
-crawlerWinning();
+// insertStoreWinning();
 
-module.exports.crawlerWinning = crawlerWinning;
+module.exports.crawl = insertStoreWinning;

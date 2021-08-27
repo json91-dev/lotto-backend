@@ -1,5 +1,6 @@
 const axios = require('axios');
 const qs = require('qs');
+const path = require('path');
 var Iconv = require('iconv').Iconv;
 var iconv = new Iconv('EUC-KR', 'UTF-8//TRANSLIT//IGNORE');
 const url = `https://dhlottery.co.kr/store.do?method=sellerInfo645Result`;
@@ -13,9 +14,13 @@ const options = {
 };
 
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({
+  path: path.resolve(
+    process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"
+  ),
+});
 
-const db = require('../models/index');
+const db = require('./models/index');
 
 const SIDOArray = [
   '서울',
@@ -37,8 +42,7 @@ const SIDOArray = [
   '세종',
 ];
 
-const crawlerStore = async () => {
-  outer:
+const insertStore = async () => {
   for (const SIDO2 of SIDOArray) {
     await db.sequelize.sync();
 
@@ -124,7 +128,6 @@ const crawlerStore = async () => {
     }
   }
 };
-crawlerStore();
 
 /**
  * 구 주소의 resion3와 region4를 구함.
@@ -300,4 +303,6 @@ const toJson = (data) => {
   )
 };
 
-module.exports.crawlerStore = crawlerStore;
+// insertStore();
+
+module.exports.crawl = insertStore;

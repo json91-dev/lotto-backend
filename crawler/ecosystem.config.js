@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
-    name: 'lotto-backend',
-    script: './index.js',
+    name: 'lotto-crawler',
+    script: './cronService.js',
     instances: 0,
     exec_mode: 'cluster',
     wait_ready: true,
