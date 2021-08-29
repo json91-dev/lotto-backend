@@ -127,6 +127,8 @@ const insertStore = async () => {
       currentPage++;
     }
   }
+
+  console.log('판매점 데이터 크롤링 종료');
 };
 
 /**

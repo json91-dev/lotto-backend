@@ -168,7 +168,7 @@ const insertStoreWinning = async (isLatestRoundCrawl) => {
       }
     }
 
-    console.log(`크롤러 작업 완료`);
+    console.log(`당첨 판매점 크롤러 작업 완료`);
     await page.close();
     await browser.close();
   } catch (e) {

@@ -103,6 +103,8 @@ const deleteClosedStore = async () => {
       currentPage--;
     }
   }
+
+  console.log("폐점된 판매점 크롤링후 DB에서 삭제 작업 완료");
 };
 
 /**

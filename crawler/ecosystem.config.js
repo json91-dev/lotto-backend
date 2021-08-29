@@ -9,7 +9,8 @@ module.exports = {
     kill_timeout: 5000,
     merge_logs: true,
     env_development: {
-      NODE_ENV: "development"
+      NODE_ENV: "development",
+      CRON_TEST: "true"
     },
     env_production: {
       NODE_ENV: "production"
