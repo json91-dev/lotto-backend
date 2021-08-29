@@ -351,6 +351,14 @@ const insertWinning = async (winning) => {
   }
 };
 
-// insertStoreWinning();
+const IS_CRON_TEST = process.env.CRON_TEST === 'true'; // 크론 테스트인지 여부 확인
+const IS_DEV = process.env.NODE_ENV === 'development'; // DEV 환경인지 확인
+
+/** DEV Cron 테스트가 아니고, DEV환경일때만 파일에서 바로 크론작업 수행 **/
+if (IS_CRON_TEST) {
+  console.log('CRON 테스트')
+} else if (IS_DEV) {
+  insertStoreWinning(false);
+}
 
 module.exports.crawl = insertStoreWinning;

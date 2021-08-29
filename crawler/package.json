@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "crawl-store": "NODE_ENV=development node store-location.js",
-    "crawl-winning": "NODE_ENV=development node winning-location.js",
-    "crawl-winning-last": "NODE_ENV=development node winning-location.js"
+    "insertStore": "NODE_ENV=development node insertStore.js",
+    "deleteClosedStore": "NODE_ENV=development node deleteClosedStore.js",
+    "insertStoreWinning": "NODE_ENV=development node insertStoreWinning.js",
+    "cronTest": "NODE_ENV=development CRON_TEST=true node cronService.js"
   },
   "author": "",
   "license": "ISC",
