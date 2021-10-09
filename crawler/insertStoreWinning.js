@@ -8,16 +8,27 @@ dotenv.config({
 
 const puppeteer = require('puppeteer');
 const db = require('./models/index');
+const IS_CRON_TEST = process.env.CRON_TEST === 'true'; // 크론 테스트인지 여부 확인
+const IS_DEV = process.env.NODE_ENV === 'development'; // DEV 환경인지 확인
 
 /** 로또 지옥 사이트 크롤링후 당첨 상점을 DB로 삽입 **/
 const insertStoreWinning = async (isLatestRoundCrawl) => {
   try {
     await db.sequelize.sync();
 
-    const browser = await puppeteer.launch({
-      headless: true, // 실제 화면에 보여줄지 말지 결정
-      // args: ['--window-size=1920, 1080', '--disable-notifications', '--no-sandbox']
-    });
+    /** Production 환경(EC2) 일때와 개발환경(Mac)일때 browser 옵션 분리 **/
+    let browser = null;
+    if (IS_DEV) {
+        browser = await puppeteer.launch({
+        headless: true, // 실제 화면에 보여줄지 말지 결정
+        // args: ['--window-size=1920, 1080', '--disable-notifications', '--no-sandbox']
+      });
+    } else {
+      browser = await puppeteer.launch({
+        ignoreDefaultArgs: ["--disable-extensions"],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+    }
 
     const page = await browser.newPage();
     // page.on("console", (consoleObj) => console.log(consoleObj.text()));
@@ -37,7 +48,6 @@ const insertStoreWinning = async (isLatestRoundCrawl) => {
       const round = parseInt(headerText.substring(headerText.indexOf(' ') + 1, headerText.indexOf('회')));
       return round;
     });
-
 
     /** 1등 당첨 판매점 조회 **/
     const startRound = isLatestRoundCrawl? latestRound : 949;
@@ -350,9 +360,6 @@ const insertWinning = async (winning) => {
     return null;
   }
 };
-
-const IS_CRON_TEST = process.env.CRON_TEST === 'true'; // 크론 테스트인지 여부 확인
-const IS_DEV = process.env.NODE_ENV === 'development'; // DEV 환경인지 확인
 
 /** DEV Cron 테스트가 아니고, DEV환경일때만 파일에서 바로 크론작업 수행 **/
 if (IS_CRON_TEST) {
