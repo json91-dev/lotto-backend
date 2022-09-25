@@ -1,3 +1,9 @@
+/**
+ * start ecosystem.config.js --env production
+ * start ecosystem.config.js --env development
+ * 각각의 상태일때 NODE_ENV를 설정한다.
+ * 추후 dotenv를 통한 환경변수를 주입할때 사용됨.
+ */
 module.exports = {
   apps: [{
     name: 'lotto-backend',

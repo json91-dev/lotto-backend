@@ -4,7 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const path = require('path');
-console.log(process.env.NODE_ENV);
+
 dotenv.config({
   path: path.resolve(
     process.env.NODE_ENV == "production" ? ".env.prod" : ".env.dev"
@@ -13,6 +13,7 @@ dotenv.config({
 const db = require('./models');
 const userAPIRouter = require('./routes/user');
 const storesAPIRouter = require('./routes/stores');
+const winningAPIRouter = require('./routes/winning');
 
 const app = express();
 db.sequelize.sync(); // 테이블을 알아서 생성해 줌
@@ -31,6 +32,8 @@ app.use(cors({
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use('/api/user', userAPIRouter);
 app.use('/api/stores', storesAPIRouter);
+// app.use('/api/winning', winningAPIRouter);
+
 // 로컬 호스트의 서버 실행
 app.listen(3000, () => {
   console.log('server is running on localhost: 3000');
